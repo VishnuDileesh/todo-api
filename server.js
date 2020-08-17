@@ -112,6 +112,19 @@ app.put("/todos/:id", (req, res) => {
   }
 });
 
+// delete single todo item matching the id
+
+app.delete("/todos/:id", (req, res) => {
+  let todo_id = req.params.id;
+
+  todo
+    .findOneAndDelete({ _id: todo_id })
+    .then((doc) => {
+      res.json({ message: "success" });
+    })
+    .catch((err) => res.json({ error: err }));
+});
+
 // end routes
 
 // start server
