@@ -39,9 +39,21 @@ app.get("/", (req, res) => {
   res.send("hello world");
 });
 
+// get all todo item from database
+
+app.get("/todos", (req, res) => {
+  todo
+    .find()
+    .then((docs) => {
+      res.json({ data: docs });
+    })
+    .catch((err) => res.json({ error: err }));
+});
+
+// add todo item to database
+
 app.post("/todos", (req, res) => {
   data = req.body;
-  console.log(data);
   let newTodo = {
     item: data.item,
     completed: data.completed,
@@ -51,11 +63,9 @@ app.post("/todos", (req, res) => {
   todo
     .insert(newTodo)
     .then((doc) => {
-      console.log(doc);
       res.json(doc);
     })
     .catch((err) => {
-      console.log(err);
       res.json({ error: err });
     });
 });
