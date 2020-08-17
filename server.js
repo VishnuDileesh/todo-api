@@ -70,6 +70,21 @@ app.post("/todos", (req, res) => {
     });
 });
 
+// get single todo item matching the id
+
+app.get("/todos/:id", (req, res) => {
+  let todo_id = req.params.id;
+
+  todo
+    .findOne({ _id: todo_id })
+    .then((doc) => {
+      res.json({ data: doc });
+    })
+    .catch((err) => {
+      res.json({ error: err });
+    });
+});
+
 // end routes
 
 // start server
