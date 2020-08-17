@@ -85,6 +85,33 @@ app.get("/todos/:id", (req, res) => {
     });
 });
 
+// update single todo item matching the id
+
+app.put("/todos/:id", (req, res) => {
+  let todo_id = req.params.id;
+
+  if (req.body.item) {
+    todo
+      .findOneAndUpdate({ _id: todo_id }, { $set: { item: req.body.item } })
+      .then((doc) => {
+        res.json(doc);
+      })
+      .catch((err) => res.json({ error: err }));
+  }
+
+  if (req.body.completed) {
+    todo
+      .findOneAndUpdate(
+        { _id: todo_id },
+        { $set: { completed: req.body.completed } }
+      )
+      .then((doc) => {
+        res.json(doc);
+      })
+      .catch((err) => res.json({ error: err }));
+  }
+});
+
 // end routes
 
 // start server
