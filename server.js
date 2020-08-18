@@ -178,16 +178,22 @@ app.post("/todos", jwtVerify, (req, res) => {
 
 // get single todo item matching the id
 
-app.get("/todos/:id", (req, res) => {
+app.get("/todos/:id", jwtVerify, (req, res) => {
   let todo_id = req.params.id;
+
+  const user_id = req.user.id;
 
   todo
     .findOne({ _id: todo_id })
     .then((doc) => {
+      if (!user_id === doc.user_id) {
+        res.sendStatus(401);
+      }
+
       res.json({ data: doc });
     })
     .catch((err) => {
-      res.json({ error: err });
+      res.sendStatus(404);
     });
 });
 
