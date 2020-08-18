@@ -60,12 +60,13 @@ app.use(limiter);
 // start routes
 
 app.get("/", (req, res) => {
-  res.send("hello world");
+  // res.send("hello world");
+  user.find().then((docs) => res.json(docs));
 });
 
-// create user
+// user registration
 
-app.post("/users", (req, res) => {
+app.post("/users/register", (req, res) => {
   const { username, email, password } = req.body;
 
   let newUser = {
@@ -73,16 +74,19 @@ app.post("/users", (req, res) => {
     email,
   };
 
-  user.insert(newUser).then((doc) => {
-    bcrypt.hash(password, saltRounds, (err, result) => {
-      if (result) {
-        doc.password = result;
+  bcrypt.hash(password, saltRounds, (err, result) => {
+    if (result) {
+      newUser.password = result;
 
-        res.json({ message: "success", action: "user created" });
-      } else {
-        res.sendStatus(500);
-      }
-    });
+      user
+        .insert(newUser)
+        .then((user) =>
+          res.json({ message: "success", action: "user created" })
+        )
+        .catch((err) => res.json({ error: err }));
+    } else {
+      res.sendStatus(500);
+    }
   });
 });
 
