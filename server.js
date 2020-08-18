@@ -238,13 +238,19 @@ app.put("/todos/:id", jwtVerify, (req, res) => {
 
 // delete single todo item matching the id
 
-app.delete("/todos/:id", (req, res) => {
-  let todo_id = req.params.id;
+app.delete("/todos/:id", jwtVerify, (req, res) => {
+  const todo_id = req.params.id;
+
+  const user_id = req.user.id;
 
   todo
-    .findOneAndDelete({ _id: todo_id })
+    .findOneAndDelete({ _id: todo_id, user_id: user_id })
     .then((doc) => {
-      res.json({ message: "success" });
+      if (doc === null) {
+        res.sendStatus(401);
+      }
+
+      res.json({ message: "success", action: "todo deleted" });
     })
     .catch((err) => res.json({ error: err }));
 });
