@@ -15,7 +15,7 @@ const PORT = process.env.PORT;
 // authentication import packages
 
 const bcrypt = require("bcrypt");
-const jsonwebtoken = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 // jwt and bcrypt config
 
@@ -60,8 +60,7 @@ app.use(limiter);
 // start routes
 
 app.get("/", (req, res) => {
-  // res.send("hello world");
-  user.find().then((docs) => res.json(docs));
+  res.send("hello world");
 });
 
 // user registration
@@ -88,6 +87,29 @@ app.post("/users/register", (req, res) => {
       res.sendStatus(500);
     }
   });
+});
+
+// user login
+
+app.post("/users/login", (req, res) => {
+  const { email, password } = req.body;
+
+  user
+    .findOne({ email })
+    .then((user) => {
+      bcrypt.compare(password, user.password).then((result) => {
+        if (result) {
+          const accessToken = jwt.sign(
+            { username: user.username },
+            tokenSecretKey
+          );
+          res.json(accessToken);
+        } else {
+          res.json({ error: "email or password is incorrect" });
+        }
+      });
+    })
+    .catch((err) => res.json({ error: "email or password is incorrect" }));
 });
 
 // get all todo item from database
