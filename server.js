@@ -199,25 +199,38 @@ app.get("/todos/:id", jwtVerify, (req, res) => {
 
 // update single todo item matching the id
 
-app.put("/todos/:id", (req, res) => {
-  let todo_id = req.params.id;
+app.put("/todos/:id", jwtVerify, (req, res) => {
+  const todo_id = req.params.id;
+
+  const user_id = req.user.id;
 
   if (req.body.item) {
     todo
-      .findOneAndUpdate({ _id: todo_id }, { $set: { item: req.body.item } })
+      .findOneAndUpdate(
+        { _id: todo_id, user_id: user_id },
+        { $set: { item: req.body.item } }
+      )
       .then((doc) => {
+        if (doc === null) {
+          res.sendStatus(401);
+        }
         res.json(doc);
       })
-      .catch((err) => res.json({ error: err }));
+      .catch((err) => {
+        res.sendStatus(500);
+      });
   }
 
   if (req.body.completed) {
     todo
       .findOneAndUpdate(
-        { _id: todo_id },
+        { _id: todo_id, user_id: user_id },
         { $set: { completed: req.body.completed } }
       )
       .then((doc) => {
+        if (doc === null) {
+          res.sendStatus(401);
+        }
         res.json(doc);
       })
       .catch((err) => res.json({ error: err }));
