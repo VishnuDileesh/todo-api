@@ -123,9 +123,13 @@ app.post("/users/login", (req, res) => {
     .then((user) => {
       bcrypt.compare(password, user.password).then((result) => {
         if (result) {
-          const accessToken = jwt.sign({ email: user.email }, tokenSecretKey, {
-            expiresIn: "1d",
-          });
+          const accessToken = jwt.sign(
+            { id: user._id, email: user.email },
+            tokenSecretKey,
+            {
+              expiresIn: "1d",
+            }
+          );
           res.json(accessToken);
         } else {
           res.json({ error: "email or password is incorrect" });
@@ -138,8 +142,10 @@ app.post("/users/login", (req, res) => {
 // get all todo item from database
 
 app.get("/todos", jwtVerify, (req, res) => {
+  const user_id = req.user.id;
+
   todo
-    .find()
+    .find({ user_id })
     .then((docs) => {
       res.json({ data: docs });
     })
@@ -148,11 +154,15 @@ app.get("/todos", jwtVerify, (req, res) => {
 
 // add todo item to database
 
-app.post("/todos", (req, res) => {
-  data = req.body;
+app.post("/todos", jwtVerify, (req, res) => {
+  const { item, completed } = req.body;
+
+  const user_id = req.user.id;
+
   let newTodo = {
-    item: data.item,
-    completed: data.completed,
+    item,
+    completed,
+    user_id,
     created_at: new Date(),
   };
 
