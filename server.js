@@ -184,12 +184,11 @@ app.get("/todos/:id", jwtVerify, (req, res) => {
   const user_id = req.user.id;
 
   todo
-    .findOne({ _id: todo_id })
+    .findOne({ _id: todo_id, user_id: user_id })
     .then((doc) => {
-      if (!user_id === doc.user_id) {
+      if (doc === null) {
         res.sendStatus(401);
       }
-
       res.json({ data: doc });
     })
     .catch((err) => {
