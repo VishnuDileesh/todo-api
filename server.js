@@ -17,6 +17,12 @@ const PORT = process.env.PORT;
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
 
+// jwt token secret config
+
+const tokenSecretKey = process.env.TOKEN_SECRET;
+
+// end jwt token secret config
+
 // start db config
 
 const dbURI = process.env.DB_URI;
