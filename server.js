@@ -17,11 +17,12 @@ const PORT = process.env.PORT;
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
 
-// jwt token secret config
+// jwt and bcrypt config
 
 const tokenSecretKey = process.env.TOKEN_SECRET;
+const saltRounds = 10;
 
-// end jwt token secret config
+// end jwt and bcrypt config
 
 // start db config
 
@@ -60,6 +61,29 @@ app.use(limiter);
 
 app.get("/", (req, res) => {
   res.send("hello world");
+});
+
+// create user
+
+app.post("/users", (req, res) => {
+  const { username, email, password } = req.body;
+
+  let newUser = {
+    username,
+    email,
+  };
+
+  user.insert(newUser).then((doc) => {
+    bcrypt.hash(password, saltRounds, (err, result) => {
+      if (result) {
+        doc.password = result;
+
+        res.json({ message: "success", action: "user created" });
+      } else {
+        res.sendStatus(500);
+      }
+    });
+  });
 });
 
 // get all todo item from database
