@@ -123,7 +123,9 @@ app.post("/users/login", (req, res) => {
     .then((user) => {
       bcrypt.compare(password, user.password).then((result) => {
         if (result) {
-          const accessToken = jwt.sign({ email: user.email }, tokenSecretKey);
+          const accessToken = jwt.sign({ email: user.email }, tokenSecretKey, {
+            expiresIn: "1d",
+          });
           res.json(accessToken);
         } else {
           res.json({ error: "email or password is incorrect" });
