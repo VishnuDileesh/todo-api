@@ -10,7 +10,12 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const cors = require("cors");
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
+
+// authentication import packages
+
+const bcrypt = require("bcrypt");
+const jsonwebtoken = require("jsonwebtoken");
 
 // start db config
 
@@ -21,7 +26,9 @@ db.then(() => {
   console.log("Connected to DB Successfulyy");
 });
 
-const todo = db.get("document");
+const todo = db.get("todo");
+
+const user = db.get("user");
 
 // end db config
 
