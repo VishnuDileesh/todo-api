@@ -57,6 +57,30 @@ app.use(limiter);
 
 // end middleware config
 
+// jwt veryification middleware
+
+const jwtVerify = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+
+    jwt.verify(token, tokenSecretKey, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+
+      req.user = user;
+
+      next();
+    });
+  } else {
+    res.sendStatus(401);
+  }
+};
+
+// end jwt verification middleware
+
 // start routes
 
 app.get("/", (req, res) => {
@@ -99,10 +123,7 @@ app.post("/users/login", (req, res) => {
     .then((user) => {
       bcrypt.compare(password, user.password).then((result) => {
         if (result) {
-          const accessToken = jwt.sign(
-            { username: user.username },
-            tokenSecretKey
-          );
+          const accessToken = jwt.sign({ email: user.email }, tokenSecretKey);
           res.json(accessToken);
         } else {
           res.json({ error: "email or password is incorrect" });
@@ -114,7 +135,7 @@ app.post("/users/login", (req, res) => {
 
 // get all todo item from database
 
-app.get("/todos", (req, res) => {
+app.get("/todos", jwtVerify, (req, res) => {
   todo
     .find()
     .then((docs) => {
