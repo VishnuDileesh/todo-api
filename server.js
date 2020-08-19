@@ -209,6 +209,10 @@ app.put("/todos/:id", jwtVerify, (req, res) => {
 
   const user_id = req.user.id;
 
+  if (req.body.item === undefined && req.body.completed === undefined) {
+    res.json({ message: "value of item or completed is to be passed" });
+  }
+
   if (req.body.item) {
     todo
       .findOneAndUpdate(
