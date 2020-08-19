@@ -155,7 +155,13 @@ app.get("/todos", jwtVerify, (req, res) => {
 // add todo item to database
 
 app.post("/todos", jwtVerify, (req, res) => {
-  const { item, completed } = req.body;
+  const { item } = req.body;
+
+  let completed = req.body.completed;
+
+  if (completed === undefined) {
+    completed = false;
+  }
 
   const user_id = req.user.id;
 
