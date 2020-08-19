@@ -193,7 +193,7 @@ app.get("/todos/:id", jwtVerify, (req, res) => {
     .findOne({ _id: todo_id, user_id: user_id })
     .then((doc) => {
       if (doc === null) {
-        res.sendStatus(401);
+        res.sendStatus(404);
       }
       res.json({ data: doc });
     })
@@ -221,12 +221,12 @@ app.put("/todos/:id", jwtVerify, (req, res) => {
       )
       .then((doc) => {
         if (doc === null) {
-          res.sendStatus(401);
+          res.sendStatus(404);
         }
         res.json(doc);
       })
       .catch((err) => {
-        res.sendStatus(500);
+        res.sendStatus(404);
       });
   }
 
@@ -257,7 +257,7 @@ app.delete("/todos/:id", jwtVerify, (req, res) => {
     .findOneAndDelete({ _id: todo_id, user_id: user_id })
     .then((doc) => {
       if (doc === null) {
-        res.sendStatus(401);
+        res.sendStatus(404);
       }
 
       res.json({ message: "success", action: "todo deleted" });
