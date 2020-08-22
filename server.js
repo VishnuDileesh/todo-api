@@ -10,6 +10,7 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
 const cors = require("cors");
+const yup = require("yup");
 const PORT = process.env.PORT;
 
 // authentication import packages
@@ -81,6 +82,19 @@ const jwtVerify = (req, res, next) => {
 
 // end jwt verification middleware
 
+// yup - userSchema config
+
+let userSchema = yup.object().shape({
+  username: yup.string().required(),
+  email: yup.string().email().required(),
+  password: yup.string().min(8).required(),
+  joined_on: yup.date().default(() => {
+    return new Date();
+  }),
+});
+
+// end yup - userSchema config
+
 // start routes
 
 app.get("/", (req, res) => {
@@ -95,22 +109,33 @@ app.post("/users/register", (req, res) => {
   let newUser = {
     username,
     email,
+    password,
   };
 
-  bcrypt.hash(password, saltRounds, (err, result) => {
-    if (result) {
-      newUser.password = result;
+  userSchema
+    .validate(newUser)
+    .then((validUser) => {
+      bcrypt.hash(validUser.password, saltRounds, (err, result) => {
+        if (result) {
+          validUser.password = result;
 
-      user
-        .insert(newUser)
-        .then((user) =>
-          res.json({ message: "success", action: "user created" })
-        )
-        .catch((err) => res.json({ error: err }));
-    } else {
-      res.sendStatus(500);
-    }
-  });
+          user
+            .insert(validUser)
+            .then((user) => {
+              console.log(user);
+              res.json({ message: "success" });
+            })
+            .catch((err) => {
+              res.status(500).json({ error: err });
+            });
+        } else {
+          res.sendStatus(500);
+        }
+      });
+    })
+    .catch((err) => {
+      res.status(422).json({ error: err.name, detail: err.errors });
+    });
 });
 
 // user login
