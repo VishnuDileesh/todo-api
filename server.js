@@ -32,7 +32,10 @@ const saltRounds = 10;
 const dbURI = process.env.DB_URI;
 const db = monk(dbURI);
 
-db.then(() => { console.info("Connected to DB Successfulyy"); });
+db.catch((code) => process.exit(code));
+
+// db.then(() => { console.info("Connected to DB Successfulyy"); });
+
 
 const todo = db.get("todo");
 
@@ -172,9 +175,9 @@ app.post("/users/login", (req, res) => {
 // get all todo item from database
 
 app.get("/todos", jwtVerify, (req, res) => {
-  const user_id = req.user.id;
+  const userId = req.user.id;
 
-  todo.find({user_id})
+  todo.find({userId})
       .then((docs) => { res.json({data : docs}); })
       .catch((err) => res.json({error : err}));
 });
@@ -190,12 +193,12 @@ app.post("/todos", jwtVerify, (req, res) => {
     completed = false;
   }
 
-  const user_id = req.user.id;
+  const userId = req.user.id;
 
   const newTodo = {
     item,
     completed,
-    user_id,
+    userId,
     created_at : new Date(),
   };
 
@@ -207,11 +210,11 @@ app.post("/todos", jwtVerify, (req, res) => {
 // get single todo item matching the id
 
 app.get("/todos/:id", jwtVerify, (req, res) => {
-  const todo_id = req.params.id;
+  const todoId = req.params.id;
 
-  const user_id = req.user.id;
+  const userId = req.user.id;
 
-  todo.findOne({_id : todo_id, user_id})
+  todo.findOne({_id : todoId, userId})
       .then((doc) => {
         if (doc === null) {
           res.sendStatus(404);
@@ -224,16 +227,16 @@ app.get("/todos/:id", jwtVerify, (req, res) => {
 // update single todo item matching the id
 
 app.put("/todos/:id", jwtVerify, (req, res) => {
-  const todo_id = req.params.id;
+  const todoId = req.params.id;
 
-  const user_id = req.user.id;
+  const userId = req.user.id;
 
   if (req.body.item === undefined && req.body.completed === undefined) {
     res.json({message : "value of item or completed is to be passed"});
   }
 
   if (req.body.item) {
-    todo.findOneAndUpdate({_id : todo_id, user_id},
+    todo.findOneAndUpdate({_id : todoId, userId},
                           {$set : {item : req.body.item}})
         .then((doc) => {
           if (doc === null) {
@@ -245,7 +248,7 @@ app.put("/todos/:id", jwtVerify, (req, res) => {
   }
 
   if (req.body.completed) {
-    todo.findOneAndUpdate({_id : todo_id, user_id},
+    todo.findOneAndUpdate({_id : todoId, userId},
                           {$set : {completed : req.body.completed}})
         .then((doc) => {
           if (doc === null) {
@@ -260,11 +263,11 @@ app.put("/todos/:id", jwtVerify, (req, res) => {
 // delete single todo item matching the id
 
 app.delete("/todos/:id", jwtVerify, (req, res) => {
-  const todo_id = req.params.id;
+  const todoId = req.params.id;
 
-  const user_id = req.user.id;
+  const userId = req.user.id;
 
-  todo.findOneAndDelete({_id : todo_id, user_id})
+  todo.findOneAndDelete({_id : todoId, userId})
       .then((doc) => {
         if (doc === null) {
           res.sendStatus(404);
