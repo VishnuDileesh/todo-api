@@ -109,6 +109,12 @@ const addTodoSchema = yup.object().shape({
 });
 
 
+const updateTodoSchema = yup.object().shape({
+  item: yup.string(),
+  completed: yup.boolean(),
+})
+
+
 // end yup - todoSchema config
 
 
@@ -166,7 +172,7 @@ app.post("/users/login", (req, res) => {
           bcrypt.compare(password, foundUser.password)
             .then((result) => {
               if(result){
-                const accessToken = jwt.sign({id: foundUser.id, username: foundUser.username, email: foundUser.email}, tokenSecretKey, {
+                const accessToken = jwt.sign({id: foundUser._id, username: foundUser.username, email: foundUser.email}, tokenSecretKey, {
                   expiresIn: "1d",
                 });
 
@@ -189,7 +195,8 @@ app.post("/users/login", (req, res) => {
 app.get("/todos", jwtVerify, (req, res) => {
   const userId = req.user.id;
 
-  todo.find({userId})
+
+  todo.find({user_id: userId})
       .then((docs) => { res.json({data : docs}); })
       .catch((err) => res.json({error : err}));
 });
@@ -199,12 +206,15 @@ app.get("/todos", jwtVerify, (req, res) => {
 app.post("/todos", jwtVerify, (req, res) => {
 
 
+
+  const userId = req.user.id;
+
   addTodoSchema.validate(req.body)
     .then((validatedTodo) => {
     
       const newTodo = validatedTodo;
 
-      newTodo.userId = req.userId;
+      newTodo.user_id = userId;
 
       todo.insert(newTodo)
         .then((doc) => { res.status(201).json(doc); })
@@ -224,14 +234,16 @@ app.get("/todos/:id", jwtVerify, (req, res) => {
 
   const userId = req.user.id;
 
-  todo.findOne({_id : todoId, userId})
+
+
+  todo.findOne({_id : todoId, user_id: userId})
       .then((doc) => {
         if (doc === null) {
           res.sendStatus(404);
         }
         res.json({data : doc});
       })
-      .catch((err) => { res.sendStatus(404); });
+      .catch(() => { res.sendStatus(404); });
 });
 
 // update single todo item matching the id
@@ -241,33 +253,15 @@ app.put("/todos/:id", jwtVerify, (req, res) => {
 
   const userId = req.user.id;
 
-  if (req.body.item === undefined && req.body.completed === undefined) {
-    res.json({message : "value of item or completed is to be passed"});
-  }
 
-  if (req.body.item) {
-    todo.findOneAndUpdate({_id : todoId, userId},
-                          {$set : {item : req.body.item}})
-        .then((doc) => {
-          if (doc === null) {
-            res.sendStatus(404);
-          }
-          res.json(doc);
-        })
-        .catch((err) => { res.sendStatus(404); });
-  }
+  updateTodoSchema.validate(req.body)
+    .then((validatedItem) => {
 
-  if (req.body.completed) {
-    todo.findOneAndUpdate({_id : todoId, userId},
-                          {$set : {completed : req.body.completed}})
-        .then((doc) => {
-          if (doc === null) {
-            res.sendStatus(401);
-          }
-          res.json(doc);
-        })
-        .catch((err) => res.json({error : err}));
-  }
+      todo.findOneAndUpdate({_id: todoId, user_id: userId}, {$set: validatedItem})
+        .then((doc) => doc === null ? res.sendStatus(404) : res.sendStatus(204))
+        .catch(() => { res.sendStatus(404); })
+    })
+
 });
 
 // delete single todo item matching the id
