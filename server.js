@@ -34,7 +34,6 @@ const db = monk(dbURI);
 
 db.catch((code) => process.exit(code));
 
-// db.then(() => { console.info("Connected to DB Successfulyy"); });
 
 
 const todo = db.get("todo");
@@ -100,6 +99,19 @@ const userLoginSchema = yup.object().shape({
 });
 
 // end yup - userSchema config
+
+// yup - todoSchema config
+
+const addTodoSchema = yup.object().shape({
+  item : yup.string().required(),
+  completed : yup.boolean().default(false),
+  created_at : yup.date().default(() => { return new Date(); }),
+});
+
+
+// end yup - todoSchema config
+
+
 
 // start routes
 
@@ -185,26 +197,24 @@ app.get("/todos", jwtVerify, (req, res) => {
 // add todo item to database
 
 app.post("/todos", jwtVerify, (req, res) => {
-  const {item} = req.body;
 
-  let {completed} = req.body;
 
-  if (completed === undefined) {
-    completed = false;
-  }
+  addTodoSchema.validate(req.body)
+    .then((validatedTodo) => {
+    
+      const newTodo = validatedTodo;
 
-  const userId = req.user.id;
+      newTodo.userId = req.userId;
 
-  const newTodo = {
-    item,
-    completed,
-    userId,
-    created_at : new Date(),
-  };
+      todo.insert(newTodo)
+        .then((doc) => { res.status(201).json(doc); })
+        .catch((err) => { res.json({error: err}); });
+    })
+    .catch((err) => {
+      res.status(422).json({error: err.name, details: err.errors});
+    });
 
-  todo.insert(newTodo)
-      .then((doc) => { res.json(doc); })
-      .catch((err) => { res.json({error : err}); });
+
 });
 
 // get single todo item matching the id
