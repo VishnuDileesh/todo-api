@@ -271,13 +271,14 @@ app.delete("/todos/:id", jwtVerify, (req, res) => {
 
   const userId = req.user.id;
 
-  todo.findOneAndDelete({_id : todoId, userId})
+  todo.findOneAndDelete({_id : todoId, user_id: userId})
       .then((doc) => {
         if (doc === null) {
           res.sendStatus(404);
         }
 
-        res.json({message : "success", action : "todo deleted"});
+        res.sendStatus(204);
+
       })
       .catch((err) => res.json({error : err}));
 });
@@ -286,4 +287,4 @@ app.delete("/todos/:id", jwtVerify, (req, res) => {
 
 // start server
 
-app.listen(PORT, () => { console.log(`Server running at port ${PORT}`); });
+app.listen(PORT);
