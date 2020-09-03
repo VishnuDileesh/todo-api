@@ -21,7 +21,7 @@ db.then(() => {
   console.log("Connected to DB Successfulyy");
 });
 
-const todo = db.get("document");
+const todo = db.get("todo");
 
 // end db config
 
